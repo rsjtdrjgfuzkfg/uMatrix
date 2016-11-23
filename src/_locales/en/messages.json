@@ -318,6 +318,10 @@
         "message": "Enable cloud storage support",
         "description": ""
     },
+    "settingsNoScriptsIfRootBlocked" : {
+        "message": "Disable JavaScript completely if scripts are blocked for the root domain (Firefox only)",
+        "description": ""
+    },
 
     "privacyPageTitle" : {
         "message": "uMatrix &ndash; Privacy",

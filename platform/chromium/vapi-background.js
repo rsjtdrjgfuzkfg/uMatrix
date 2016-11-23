@@ -744,7 +744,11 @@ vAPI.net.registerListeners = function() {
     var onHeadersReceivedClient = this.onHeadersReceived.callback;
     var onHeadersReceived = function(details) {
         normalizeRequestDetails(details);
-        return onHeadersReceivedClient(details);
+        var result = onHeadersReceivedClient(details);
+        if ( !result.responseHeaders ) {
+            return;
+        }
+        return { responseHeaders : result.responseHeaders };
     };
     chrome.webRequest.onHeadersReceived.addListener(
         onHeadersReceived,

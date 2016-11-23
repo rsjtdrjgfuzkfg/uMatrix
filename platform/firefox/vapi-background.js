@@ -2014,12 +2014,17 @@ var httpObserver = {
                 url: URI.asciiSpec
             });
 
-            if ( result ) {
+            if ( result.responseHeaders ) {
                 channel.setResponseHeader(
                     topic,
                     result.responseHeaders.pop().value,
                     true
                 );
+            }
+
+            var browser = tabWatcher.browserFromTabId(channelData[0]);
+            if ( browser ) {
+                browser.docShell.allowJavascript = !result.noscript;
             }
 
             return;

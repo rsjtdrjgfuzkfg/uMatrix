@@ -115,6 +115,7 @@ return {
         externalHostsFiles: '',
         iconBadgeEnabled: false,
         maxLoggedRequests: 1000,
+        noScriptsIfRootBlocked: false,
         popupScopeLevel: 'domain',
         processHyperlinkAuditing: true,
         processReferer: false,

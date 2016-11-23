@@ -297,10 +297,15 @@ var foilRefererHeaders = function(µm, toHostname, details) {
 var onHeadersReceived = function(details) {
     // console.debug('onHeadersReceived()> "%s": %o', details.url, details);
 
+    let result = {
+        noscript: false,
+        responseHeaders: null,
+    };
+
     // Ignore schemes other than 'http...'
     var requestURL = details.url;
     if ( requestURL.lastIndexOf('http', 0) !== 0 ) {
-        return;
+        return result;
     }
 
     var µm = µMatrix;
@@ -315,11 +320,11 @@ var onHeadersReceived = function(details) {
 
     var tabContext = µm.tabContextManager.lookup(tabId);
     if ( tabContext === null ) {
-        return;
+        return result;
     }
 
     if ( µm.mustAllow(tabContext.rootHostname, µm.URI.hostnameFromURI(requestURL), 'script') ) {
-        return;
+        return result;
     }
 
     // If javascript is not allowed, say so through a `Content-Security-Policy`
@@ -336,6 +341,8 @@ var onHeadersReceived = function(details) {
     //     to prevent spurious CSP violations.
 
     var headers = details.responseHeaders;
+    result.responseHeaders = headers;
+    result.noscript = µm.userSettings.noScriptsIfRootBlocked;
 
     // Is there a CSP header present?
     // If not, inject a script-src CSP directive to prevent inline javascript
@@ -346,7 +353,7 @@ var onHeadersReceived = function(details) {
             'name': 'Content-Security-Policy',
             'value': "script-src 'unsafe-eval' *"
         });
-        return { responseHeaders: headers };
+        return result;
     }
 
     // A CSP header is already present.
@@ -368,7 +375,7 @@ var onHeadersReceived = function(details) {
             'name': 'Content-Security-Policy',
             'value': cspStripReporturi(csp + "; script-src 'unsafe-eval' *")
         });
-        return { responseHeaders: headers };
+        return result;
     }
 
     // A `script-src' directive is already present. Extract it.
@@ -383,7 +390,7 @@ var onHeadersReceived = function(details) {
             'name': 'Content-Security-Policy',
             'value': csp
         });
-        return { responseHeaders: headers };
+        return result;
     }
 
     // There are tokens enabling inline script tags in the script-src
@@ -406,7 +413,7 @@ var onHeadersReceived = function(details) {
                     csp.slice(matches.index + scriptsrc.length)
                 )
     });
-    return { responseHeaders: headers };
+    return result;
 };
 
 var cspStripReporturi = function(csp) {

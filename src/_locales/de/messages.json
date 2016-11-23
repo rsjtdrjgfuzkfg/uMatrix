@@ -311,6 +311,10 @@
     "message":"Aktiviere die Unterstützung der Speicherung in der Cloud",
     "description":""
   },
+  "settingsNoScriptsIfRootBlocked" : {
+    "message": "JavaScript vollständig deaktivieren, wenn Skripte für die Hauptdomain deaktiviert sind (nur Firefox)",
+    "description": ""
+  },
   "privacyPageTitle":{
     "message":"uMatrix &ndash; Privatsphäre",
     "description":""
