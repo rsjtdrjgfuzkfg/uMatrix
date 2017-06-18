@@ -502,6 +502,20 @@ body.colorblind .matCell.p81 {
 body.colorblind .matCell.p82 {
     background-image: url('../img/permanent-white-small-cb.png');
     }
+
+/* Cell coloring for the script column if scripts are disabled */
+body.jsDisabled .col_script.t2 {
+    background-color: #f0f0c0;
+    }
+body.jsDisabled .col_script.t82 {
+    background-color: #aa0;
+    }
+body.jsDisabled.colorblind .col_script.t2 {
+    background-color: #fdd;
+    }
+body.jsDisabled.colorblind .col_script.t82 {
+    background-color: #f99;
+    }
     
 
 .matRow.rw .matCell {

@@ -37,6 +37,7 @@ var magicId = 'tckuvvpyvswo';
 
 var Matrix = function() {
     this.reset();
+    this.onJSSwitchChange = function(hostname, value) {};
 };
 
 /******************************************************************************/
@@ -88,7 +89,8 @@ var switchBitOffsets = {
         'matrix-off': 0,
       'https-strict': 2,
           'ua-spoof': 4,
-    'referrer-spoof': 6
+    'referrer-spoof': 6,
+        'disable-js': 8
 };
 
 var switchStateToNameMap = {
@@ -208,6 +210,14 @@ var extractFirstPartyDesDomain = function(srcHostname, desHostname) {
 /******************************************************************************/
 
 Matrix.prototype.reset = function() {
+    for ( k in this.switches ) {
+        if ( this.switches.hasOwnProperty(k) === false ) {
+            continue;
+        }
+        if ( (this.switches[k] & 3 << switchBitOffsets['disable-js']) !== 0) {
+            this.onJSSwitchChange(k, 0);
+        }
+    }
     this.switches = {};
     this.rules = {};
     this.rootValue = Matrix.RedIndirect;
@@ -236,6 +246,9 @@ Matrix.prototype.assign = function(other) {
             continue;
         }
         if ( other.switches.hasOwnProperty(k) === false ) {
+            if ( (this.switches[k] & 3 << switchBitOffsets['disable-js']) !== 0 ) {
+                this.onJSSwitchChange(k, 0);
+            }
             delete this.switches[k];
         }
     }
@@ -250,6 +263,11 @@ Matrix.prototype.assign = function(other) {
     for ( k in other.switches ) {
         if ( other.switches.hasOwnProperty(k) === false ) {
             continue;
+        }
+        var newJSSwitchValue = other.switches[k] & 3 << switchBitOffsets['disable-js'];
+        if ( (this.switches[k] & (3 << switchBitOffsets['disable-js']))
+                !== newJSSwitchValue ) {
+            this.onJSSwitchChange(k, newJSSwitchValue >> switchBitOffsets['disable-js']);
         }
         this.switches[k] = other.switches[k];
     }
@@ -280,6 +298,9 @@ Matrix.prototype.setSwitch = function(switchName, srcHostname, newVal) {
         this.switches[srcHostname] = bits;
     }
     this.modifiedTime = Date.now();
+    if ( switchName === 'disable-js' ) {
+        this.onJSSwitchChange(srcHostname, newVal ? newVal : 0);
+    }
     return true;
 };
 
@@ -546,9 +567,16 @@ Matrix.prototype.setSwitchZ = function(switchName, srcHostname, newState) {
     this.modifiedTime = Date.now();
     state = this.evaluateSwitchZ(switchName, srcHostname);
     if ( state === newState ) {
+        if ( switchName === 'disable-js' ) {
+            this.onJSSwitchChange(srcHostname, 0);
+        }
         return true;
     }
-    this.switches[srcHostname] = bits | ((newState ? 1 : 2) << bitOffset);
+    var newValue = newState ? 1 : 2;
+    this.switches[srcHostname] = bits | (newValue << bitOffset);
+    if ( switchName === 'disable-js' ) {
+        this.onJSSwitchChange(srcHostname, newValue);
+    }
     return true;
 };
 
@@ -827,24 +855,6 @@ Matrix.prototype.fromString = function(text, append) {
         this.assign(matrix);
     }
 
-    this.modifiedTime = Date.now();
-};
-
-/******************************************************************************/
-
-Matrix.prototype.toSelfie = function() {
-    return {
-        magicId: magicId,
-        switches: this.switches,
-        rules: this.rules
-    };
-};
-
-/******************************************************************************/
-
-Matrix.prototype.fromSelfie = function(selfie) {
-    this.switches = selfie.switches;
-    this.rules = selfie.rules;
     this.modifiedTime = Date.now();
 };
 

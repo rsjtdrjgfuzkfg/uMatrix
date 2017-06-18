@@ -119,6 +119,10 @@
         "message": "Referrer spoofing",
         "description": "A menu entry in the matrix popup"
     },
+    "matrixSwitchDisableJS" : {
+        "message": "No Scripts",
+        "description": "A menu entry in the matrix popup"
+    },
     "matrixRevertAllEntry" : {
         "message": "Revert all temporary changes",
         "description": "A menu entry in the matrix popup"

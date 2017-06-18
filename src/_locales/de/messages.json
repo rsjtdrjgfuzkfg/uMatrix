@@ -115,6 +115,10 @@
     "message":"Referrer verschleiern",
     "description":"A menu entry in the matrix popup"
   },
+  "matrixSwitchDisableJS" : {
+    "message": "Skripte deaktivieren",
+    "description": "A menu entry in the matrix popup"
+  },
   "matrixRevertAllEntry":{
     "message":"Mache alle temporären Änderungen rückgängig",
     "description":"A menu entry in the matrix popup"

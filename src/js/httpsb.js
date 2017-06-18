@@ -37,6 +37,7 @@
     µm.pMatrix.setSwitch('referrer-spoof', 'behind-the-scene', 2);
     µm.pMatrix.setSwitch('ua-spoof', 'behind-the-scene', 2);
     µm.pMatrix.setSwitch('https-strict', 'behind-the-scene', 2);
+    µm.pMatrix.setSwitch('disable-js', 'behind-the-scene', 2);
     µm.pMatrix.setCell('*', '*', '*', µm.Matrix.Red);
     µm.pMatrix.setCell('*', '*', 'css', µm.Matrix.Green);
     µm.pMatrix.setCell('*', '*', 'image', µm.Matrix.Green);
@@ -45,6 +46,8 @@
     µm.pMatrix.setCell('*', '1st-party', 'frame', µm.Matrix.Green);
 
     µm.tMatrix = new µm.Matrix();
+    vAPI.initializeJS();
+    µm.tMatrix.onJSSwitchChange = vAPI.setJSForHostname;
     µm.tMatrix.assign(µm.pMatrix);
 })();
 

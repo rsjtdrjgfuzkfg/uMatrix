@@ -295,6 +295,7 @@ function getPermanentColor(hostname, type) {
 function addCellClass(cell, hostname, type) {
     var cl = cell.classList;
     cell.classList.add('matCell');
+    cell.classList.add('col_' + type);
     cell.classList.add('t' + getTemporaryColor(hostname, type).toString(16));
     cell.classList.add('p' + getPermanentColor(hostname, type).toString(16));
 }
@@ -1120,6 +1121,7 @@ function updateMatrixSwitches() {
     button.descendants('span.badge').text(count.toLocaleString());
     button.attr('data-tip', button.attr('data-tip').replace('{{count}}', count));
     uDom('body').toggleClass('powerOff', switches['matrix-off']);
+    uDom('body').toggleClass('jsDisabled', switches['disable-js']);
 }
 
 function toggleMatrixSwitch(ev) {

@@ -69,6 +69,7 @@
     "options_page": "dashboard.html",
     "permissions": [
         "browsingData",
+        "contentSettings",
         "cookies",
         "privacy",
         "storage",

@@ -800,6 +800,76 @@ vAPI.browserData.clearOrigin = function(domain, callback) {
 /******************************************************************************/
 /******************************************************************************/
 
+var allJSRules; // Stores all active JS settings, keys are patterns
+
+var setJSRule = function(pattern, setting) {
+    allJSRules[pattern] = setting;
+    chrome.contentSettings.javascript.set({
+        primaryPattern: pattern,
+        setting: setting
+    });
+};
+
+var resetJSRule = function(pattern) {
+    delete allJSRules[pattern];
+
+    // Chrome does not support the removal of our rules. Thus we need to clear
+    // all rules and re-insert all previous ones ('default' is blocked for the
+    // JS API, although the internal implementation supports it...):
+    chrome.contentSettings.javascript.clear({});
+    for ( var k in allJSRules ) {
+        if ( allJSRules.hasOwnProperty(k) === false ) {
+            continue;
+        }
+        chrome.contentSettings.javascript.set({
+            primaryPattern: k,
+            setting: allJSRules[k]
+        });
+    }
+}
+
+vAPI.initializeJS = function() {
+    allJSRules = {};
+    chrome.contentSettings.javascript.clear({});
+};
+
+vAPI.setJSForHostname = function(srcHostname, state) {
+    var pattern;
+    if ( srcHostname === '*' ) {
+        pattern = '<all_urls>';
+    } else if ( srcHostname === 'behind-the-scene' ) {
+        // chrome does not support content settings for behind-the-scene requests
+        return; // ignore
+    } else if ( srcHostname.endsWith('-scheme') ) {
+        var schemeIndex = srcHostname.lastIndexOf('.');
+        var scheme = srcHostname.substr(
+            schemeIndex + 1, srcHostname.length - schemeIndex - 8);
+        switch (scheme) {
+            // chrome requires content settings for files to be set on completely
+            // specified file paths, which are not representable as srcHostname
+            case 'file':
+            // chrome URIs cannot be limited
+            case 'chrome':
+                return; // ignore
+        }
+        var hostname = srcHostname.substr(0, schemeIndex);
+        pattern = scheme + '://*.' + hostname + '/*';
+    } else {
+        // The * in the scheme-pattern matches only http and https, see
+        // https://developer.chrome.com/extensions/match_patterns
+        pattern = '*://*.' + srcHostname + '/*';
+    }
+    
+    if ( state === 0 ) {
+        resetJSRule(pattern);
+    } else {
+        setJSRule(pattern, state === 1 ? 'block' : 'allow');
+    }
+};
+
+/******************************************************************************/
+/******************************************************************************/
+
 // https://developer.chrome.com/extensions/cookies
 
 vAPI.cookies = {};

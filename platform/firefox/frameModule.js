@@ -318,19 +318,20 @@ var contentObserver = {
 
 const locationChangedMessageName = hostName + ':locationChanged';
 
-var LocationChangeListener = function(docShell) {
-    if ( !docShell ) {
+var LocationChangeListener = function(docShell, window) {
+    if ( !docShell || !window ) {
         return;
     }
 
     var requestor = docShell.QueryInterface(Ci.nsIInterfaceRequestor);
-    var ds = requestor.getInterface(Ci.nsIWebProgress);
+    var wp = requestor.getInterface(Ci.nsIWebProgress);
     var mm = requestor.getInterface(Ci.nsIContentFrameMessageManager);
 
-    if ( ds && mm && typeof mm.sendAsyncMessage === 'function' ) {
-        this.docShell = ds;
+    if ( wp && mm && typeof mm.sendSyncMessage === 'function' ) {
+        this.docShell = docShell;
+        this.window = window;
         this.messageManager = mm;
-        ds.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_LOCATION);
+        wp.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_LOCATION);
     }
 };
 
@@ -343,10 +344,18 @@ LocationChangeListener.prototype.onLocationChange = function(webProgress, reques
     if ( !webProgress.isTopLevel ) {
         return;
     }
-    this.messageManager.sendAsyncMessage(locationChangedMessageName, {
+    let result = this.messageManager.sendSyncMessage(locationChangedMessageName, {
         url: location.asciiSpec,
         flags: flags,
     });
+    if ( result.length && result[0] ) {
+        let oldJSAllow = this.docShell.allowJavascript;
+        if (oldJSAllow != result[0].allowJavascript) {
+            this.docShell.allowJavascript = result[0].allowJavascript;
+            // allowJavascript needs a full load cycle to become active
+            this.window.location.reload();
+        }
+    }
 };
 
 /******************************************************************************/

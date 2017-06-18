@@ -20,7 +20,7 @@
 */
 
 /* jshint bitwise: false, esnext: true */
-/* global self, Components, punycode */
+/* global self, Components, punycode, µMatrix */
 
 // For background page
 
@@ -1253,23 +1253,27 @@ var tabWatcher = (function() {
             return;
         }
 
-        // LOCATION_CHANGE_SAME_DOCUMENT = "did not load a new document"
         if ( details.flags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT ) {
+            // LOCATION_CHANGE_SAME_DOCUMENT = "did not load a new document"
             vapi.tabs.onUpdated(tabId, {url: details.url}, {
                 frameId: 0,
                 tabId: tabId,
                 url: browser.currentURI.asciiSpec
             });
-            return;
+        } else {
+            // https://github.com/chrisaljoudi/uBlock/issues/105
+            // Allow any kind of pages
+            vapi.tabs.onNavigation({
+                frameId: 0,
+                tabId: tabId,
+                url: details.url
+            });
         }
 
-        // https://github.com/chrisaljoudi/uBlock/issues/105
-        // Allow any kind of pages
-        vapi.tabs.onNavigation({
-            frameId: 0,
-            tabId: tabId,
-            url: details.url
-        });
+        var hostname = µMatrix.tabContextManager.lookup(tabId).rootHostname;
+        return {
+            allowJavascript: !µMatrix.tMatrix.evaluateSwitchZ('disable-js', hostname)
+        };
     };
 
     var attachToTabBrowser = function(window) {
@@ -3347,6 +3351,13 @@ vAPI.browserData.clearCache = function(callback) {
 vAPI.browserData.clearOrigin = function(/* domain */) {
     // TODO
 };
+
+/******************************************************************************/
+/******************************************************************************/
+
+// Firefox fetches JS enable/disable info on the fly.
+vAPI.initializeJS = function(){}
+vAPI.setJSForHostname = function(srcHostname, state) {}
 
 /******************************************************************************/
 /******************************************************************************/
