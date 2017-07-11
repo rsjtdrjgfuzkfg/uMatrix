@@ -38,6 +38,8 @@
     µm.pMatrix.setSwitch('ua-spoof', 'behind-the-scene', 2);
     µm.pMatrix.setSwitch('https-strict', 'behind-the-scene', 2);
     µm.pMatrix.setSwitch('disable-js', 'behind-the-scene', 2);
+    µm.pMatrix.setSwitch('disable-js', 'moz-extension-scheme', 2);
+    µm.pMatrix.setSwitch('disable-js', 'about-scheme', 2);
     µm.pMatrix.setCell('*', '*', '*', µm.Matrix.Red);
     µm.pMatrix.setCell('*', '*', 'css', µm.Matrix.Green);
     µm.pMatrix.setCell('*', '*', 'image', µm.Matrix.Green);
