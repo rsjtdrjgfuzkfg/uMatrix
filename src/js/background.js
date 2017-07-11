@@ -104,6 +104,7 @@ return {
 
     userSettings: {
         autoUpdate: false,
+        autoEnableJSSwitch: true,
         clearBrowserCache: true,
         clearBrowserCacheAfter: 60,
         cloudStorageEnabled: false,

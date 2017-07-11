@@ -457,8 +457,16 @@ function handleFilter(button, leaning) {
     if ( desHostname === '' ) {
         return;
     }
+    var action = getCellAction(desHostname, type, leaning);
+    if (getUserSetting('autoEnableJSSwitch') === true && type === 'script'
+            && action === 'whitelistMatrixCell'
+            && matrixSnapshot.tSwitches['disable-js']) {
+        toggleMatrixSwitch({
+            currentTarget: document.getElementById('mtxSwitch_disable-js')
+        });
+    }
     var request = {
-        what: getCellAction(desHostname, type, leaning),
+        what: action,
         srcHostname: matrixSnapshot.scope,
         desHostname: desHostname,
         type: type

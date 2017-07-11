@@ -165,6 +165,7 @@ var matrixSnapshot = function(pageStore, details) {
         tSwitches: {},
         url: pageStore.pageUrl,
         userSettings: {
+            autoEnableJSSwitch: µmuser.autoEnableJSSwitch,
             colorBlindFriendly: µmuser.colorBlindFriendly,
             displayTextSize: µmuser.displayTextSize,
             popupScopeLevel: µmuser.popupScopeLevel

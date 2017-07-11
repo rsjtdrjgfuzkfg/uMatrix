@@ -319,6 +319,10 @@
     "message":"Aktiviere die Unterstützung der Speicherung in der Cloud",
     "description":""
   },
+  "settingsAutoEnableJSSwitch":{
+    "message":"Skripte für aktive Domain aktivieren, wenn eine Skript-Domain freigegeben wird",
+    "description":""
+  },
   "privacyPageTitle":{
     "message":"uMatrix &ndash; Privatsphäre",
     "description":""

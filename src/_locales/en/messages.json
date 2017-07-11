@@ -326,6 +326,10 @@
         "message": "Enable cloud storage support",
         "description": ""
     },
+    "settingsAutoEnableJSSwitch":{
+        "message":"Enable scripts for the current scope when whitelisting any script domain",
+        "description":""
+    },
 
     "privacyPageTitle" : {
         "message": "uMatrix &ndash; Privacy",
