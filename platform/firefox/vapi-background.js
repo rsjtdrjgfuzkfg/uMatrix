@@ -1253,24 +1253,35 @@ var tabWatcher = (function() {
             return;
         }
 
+        // LOCATION_CHANGE_SAME_DOCUMENT = "did not load a new document"
         if ( details.flags & Ci.nsIWebProgressListener.LOCATION_CHANGE_SAME_DOCUMENT ) {
-            // LOCATION_CHANGE_SAME_DOCUMENT = "did not load a new document"
             vapi.tabs.onUpdated(tabId, {url: details.url}, {
                 frameId: 0,
                 tabId: tabId,
                 url: browser.currentURI.asciiSpec
             });
-        } else {
-            // https://github.com/chrisaljoudi/uBlock/issues/105
-            // Allow any kind of pages
-            vapi.tabs.onNavigation({
-                frameId: 0,
-                tabId: tabId,
-                url: details.url
-            });
+            return;
         }
 
-        var hostname = µMatrix.tabContextManager.lookup(tabId).rootHostname;
+        // https://github.com/chrisaljoudi/uBlock/issues/105
+        // Allow any kind of pages
+        vapi.tabs.onNavigation({
+            frameId: 0,
+            tabId: tabId,
+            url: details.url
+        });
+    };
+
+    var documentStartMessageName = location.host + ':documentStart';
+
+    var onDocumentStart = function(e) {
+        var details = e.data;
+        // Firefox internally uses jar:file:-URIs for behind-the-scenes-things,
+        // and we use -1 for behind-the-scene tabs. Else "fake" will cause no
+        // confusion with actual tabs.
+        var fakeTabId = details.url.startsWith("jar:file:") ? -1 : "fake";
+        var url = µMatrix.normalizePageURL(fakeTabId, details.url);
+        var hostname = µMatrix.URI.hostnameFromURI(url);
         return {
             allowJavascript: !µMatrix.tMatrix.evaluateSwitchZ('disable-js', hostname)
         };
@@ -1406,6 +1417,10 @@ var tabWatcher = (function() {
             locationChangedMessageName,
             onLocationChanged
         );
+        vAPI.messaging.globalMessageManager.addMessageListener(
+            documentStartMessageName,
+            onDocumentStart
+        );
     };
 
     var stop = function() {
@@ -1415,6 +1430,10 @@ var tabWatcher = (function() {
         vAPI.messaging.globalMessageManager.removeMessageListener(
             locationChangedMessageName,
             onLocationChanged
+        );
+        vAPI.messaging.globalMessageManager.removeMessageListener(
+            documentStartMessageName,
+            onDocumentStart
         );
 
         for ( var win of winWatcher.getWindows() ) {

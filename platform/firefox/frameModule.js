@@ -317,21 +317,23 @@ var contentObserver = {
 /******************************************************************************/
 
 const locationChangedMessageName = hostName + ':locationChanged';
+const documentStartMessageName = hostName + ':documentStart';
 
-var LocationChangeListener = function(docShell, window) {
-    if ( !docShell || !window ) {
+var LocationChangeListener = function(docShell) {
+    if ( !docShell ) {
         return;
     }
 
     var requestor = docShell.QueryInterface(Ci.nsIInterfaceRequestor);
-    var wp = requestor.getInterface(Ci.nsIWebProgress);
+    var ds = requestor.getInterface(Ci.nsIWebProgress);
     var mm = requestor.getInterface(Ci.nsIContentFrameMessageManager);
 
-    if ( wp && mm && typeof mm.sendSyncMessage === 'function' ) {
+    if ( ds && mm && typeof mm.sendAsyncMessage === 'function'
+            && typeof mm.sendSyncMessage === 'function' ) {
         this.docShell = docShell;
-        this.window = window;
         this.messageManager = mm;
-        wp.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_LOCATION);
+        ds.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_LOCATION
+                | Ci.nsIWebProgress.NOTIFY_STATE_WINDOW);
     }
 };
 
@@ -344,17 +346,23 @@ LocationChangeListener.prototype.onLocationChange = function(webProgress, reques
     if ( !webProgress.isTopLevel ) {
         return;
     }
-    let result = this.messageManager.sendSyncMessage(locationChangedMessageName, {
+    this.messageManager.sendAsyncMessage(locationChangedMessageName, {
         url: location.asciiSpec,
         flags: flags,
     });
-    if ( result.length && result[0] ) {
-        let oldJSAllow = this.docShell.allowJavascript;
-        if (oldJSAllow != result[0].allowJavascript) {
-            this.docShell.allowJavascript = result[0].allowJavascript;
-            // allowJavascript needs a full load cycle to become active
-            this.window.location.reload();
-        }
+};
+
+LocationChangeListener.prototype.onStateChange = function(webProgress, request, stateFlags, status){
+    if ( !webProgress.isTopLevel
+            || !(stateFlags & Ci.nsIWebProgressListener.STATE_START)
+            || !(stateFlags & Ci.nsIWebProgressListener.STATE_IS_WINDOW)){
+        return;
+    }
+    let result = this.messageManager.sendSyncMessage(documentStartMessageName, {
+        url: request.name
+    });
+    if ( result.length ) {
+        this.docShell.allowJavascript = result[0].allowJavascript;
     }
 };
 

@@ -61,7 +61,7 @@ if ( docShell ) {
     let wp = docShell.QueryInterface(Ci.nsIInterfaceRequestor).getInterface(Ci.nsIWebProgress);
     let dw = wp.DOMWindow;
     if ( dw === dw.top ) {
-        locationChangeListener = new LocationChangeListener(docShell, dw);
+        locationChangeListener = new LocationChangeListener(docShell);
     }
 }
 
